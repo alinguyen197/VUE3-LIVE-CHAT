@@ -1,25 +1,54 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from "vue-router";
+import Welcome from "../views/Welcome.vue";
+import ChatRoom from "../views/ChatRoom.vue";
+import { projectAuth } from "@/firebase/config";
 
+//auth guard
+const requireAuth = (to, from, next) => {
+  let user = projectAuth.currentUser;
+  console.log("user login iss :", user);
+  if (!user) {
+    next({ name: "Welcome" });
+  } else {
+    next();
+  }
+};
+const requireNoAuth = (to, from, next) => {
+  let user = projectAuth.currentUser;
+  if (user) {
+    next({ name: "ChatRoom" });
+  } else {
+    next();
+  }
+};
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
+    path: "/",
+    name: "Welcome",
+    component: Welcome,
+    beforeEnter: requireNoAuth,
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
-]
+    path: "/chat-room",
+    name: "ChatRoom",
+    component: ChatRoom,
+    beforeEnter: requireAuth,
+    // meta:{
+    //   requireAuth: true
+    // }
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+// Neu truong hop co meta la truong hop cho do can kiem tra dang nhap
+// router.beforeEach((to,from) => {
+//   if(to.meta.requireAuth){
+//     return { name : 'Welcome'}
+//   }
+// })
+
+export default router;
